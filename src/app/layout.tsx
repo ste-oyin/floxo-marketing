@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Floxo — Spatial Intelligence for Physical Spaces",
+    default: "Floxo — See How Your Space Really Moves",
     template: "%s | Floxo",
   },
   description:
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "floor plan optimization",
   ],
   openGraph: {
-    title: "Floxo — Spatial Intelligence for Physical Spaces",
+    title: "Floxo — See How Your Space Really Moves",
     description:
       "Turn your existing security camera footage into heatmaps, customer paths, and data-backed layout recommendations.",
     url: "https://floxo.io",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Floxo — Spatial Intelligence for Physical Spaces",
+    title: "Floxo — See How Your Space Really Moves",
     description:
       "Turn your existing security camera footage into heatmaps, customer paths, and data-backed layout recommendations.",
   },
