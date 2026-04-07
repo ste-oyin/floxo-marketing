@@ -75,15 +75,6 @@
   --radius: 0.625rem;
 }
 
-.light-section {
-  --background: #f8f9fb;
-  --foreground: #1c2333;
-  --card: #ffffff;
-  --card-foreground: #1c2333;
-  --muted-foreground: #57606a;
-  --border: rgba(0, 0, 0, 0.08);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;

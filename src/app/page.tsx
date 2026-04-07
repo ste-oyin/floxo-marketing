@@ -2,18 +2,15 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
-  BarChart3,
   Clock,
   Cpu,
   Eye,
   Flame,
-  GitCompareArrows,
   Lightbulb,
   Play,
   Route,
   TrendingUp,
   Upload,
-  Zap,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────
@@ -105,7 +102,32 @@ const brands = [
 ];
 
 /* ────────────────────────────────────────────────────────────
-   Decorative SVG components
+   Shared SVG helpers — store floor plan building blocks
+   ──────────────────────────────────────────────────────────── */
+
+const W = "#3a4a5a";
+
+function Gondola({ x, y, rows, w = 50 }: { x: number; y: number; rows: number; w?: number }) {
+  const spacing = 6;
+  return (
+    <g>
+      {Array.from({ length: rows }).map((_, i) => (
+        <line
+          key={i}
+          x1={x}
+          y1={y + i * spacing}
+          x2={x + w}
+          y2={y + i * spacing}
+          stroke={W}
+          strokeWidth="1"
+        />
+      ))}
+    </g>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   Hero Floor Plan (detailed, with glow heatmap)
    ──────────────────────────────────────────────────────────── */
 
 function HeroFloorPlan() {
@@ -120,57 +142,162 @@ function HeroFloorPlan() {
           className="w-full"
         >
           <rect width="480" height="360" rx="8" fill="#0d1117" />
-          {/* Walls */}
-          <rect x="40" y="30" width="400" height="300" rx="4" stroke="#30363d" strokeWidth="2" fill="none" />
-          <line x1="200" y1="30" x2="200" y2="200" stroke="#30363d" strokeWidth="1.5" />
-          <line x1="320" y1="30" x2="320" y2="330" stroke="#30363d" strokeWidth="1.5" />
-          <line x1="40" y1="200" x2="320" y2="200" stroke="#30363d" strokeWidth="1.5" />
-          {/* Fixtures */}
-          <rect x="60" y="50" width="50" height="15" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="60" y="80" width="50" height="15" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="130" y="50" width="50" height="15" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="130" y="80" width="50" height="15" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="60" y="120" width="50" height="15" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="60" y="150" width="50" height="15" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="220" y="50" width="80" height="40" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="220" y="110" width="80" height="40" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="340" y="50" width="80" height="20" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="340" y="90" width="80" height="20" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="340" y="130" width="80" height="20" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="60" y="220" width="100" height="30" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="60" y="270" width="100" height="30" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          <rect x="340" y="220" width="80" height="90" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="1" />
-          {/* Heatmap blobs */}
-          <ellipse cx="160" cy="130" rx="70" ry="50" fill="url(#heatRed)" opacity="0.7" />
-          <ellipse cx="260" cy="90" rx="50" ry="40" fill="url(#heatOrange)" opacity="0.6" />
-          <ellipse cx="380" cy="260" rx="40" ry="35" fill="url(#heatRed)" opacity="0.5" />
-          <ellipse cx="100" cy="250" rx="50" ry="30" fill="url(#heatOrange)" opacity="0.4" />
-          <ellipse cx="260" cy="260" rx="45" ry="35" fill="url(#heatYellow)" opacity="0.3" />
-          {/* Path arrows */}
-          <path d="M80 310 Q140 280 180 250 Q220 220 280 210 Q340 200 400 180" stroke="#ff6b47" strokeWidth="1.5" strokeDasharray="6 4" fill="none" opacity="0.6" />
-          <path d="M100 310 Q160 270 220 260 Q280 250 360 280" stroke="#ff6b47" strokeWidth="1.5" strokeDasharray="6 4" fill="none" opacity="0.4" />
-          {/* Arrow tips */}
-          <circle cx="400" cy="180" r="3" fill="#ff6b47" opacity="0.6" />
-          <circle cx="360" cy="280" r="3" fill="#ff6b47" opacity="0.4" />
+
           <defs>
-            <radialGradient id="heatRed">
-              <stop offset="0%" stopColor="#ff6b47" />
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="10" />
+            </filter>
+            <filter id="glowSoft" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="16" />
+            </filter>
+            <radialGradient id="hRed">
+              <stop offset="0%" stopColor="#ff6b47" stopOpacity="0.9" />
+              <stop offset="60%" stopColor="#ff6b47" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#ff6b47" stopOpacity="0" />
             </radialGradient>
-            <radialGradient id="heatOrange">
-              <stop offset="0%" stopColor="#f0883e" />
+            <radialGradient id="hOrange">
+              <stop offset="0%" stopColor="#f0883e" stopOpacity="0.85" />
+              <stop offset="60%" stopColor="#f0883e" stopOpacity="0.35" />
               <stop offset="100%" stopColor="#f0883e" stopOpacity="0" />
             </radialGradient>
-            <radialGradient id="heatYellow">
-              <stop offset="0%" stopColor="#f0c060" />
+            <radialGradient id="hYellow">
+              <stop offset="0%" stopColor="#f0c060" stopOpacity="0.7" />
+              <stop offset="60%" stopColor="#f0c060" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#f0c060" stopOpacity="0" />
             </radialGradient>
+            <marker id="arrowHead" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+              <polygon points="0,0 6,2.5 0,5" fill="#e8a87c" opacity="0.8" />
+            </marker>
           </defs>
+
+          {/* ── Walls (thin strokes only) ── */}
+          <rect x="35" y="25" width="410" height="310" rx="3" stroke={W} strokeWidth="1.5" fill="none" />
+          {/* Entrance gap bottom-left */}
+          <line x1="35" y1="300" x2="35" y2="335" stroke="#0d1117" strokeWidth="3" />
+          {/* Interior walls */}
+          <line x1="195" y1="25" x2="195" y2="195" stroke={W} strokeWidth="1" />
+          <line x1="310" y1="25" x2="310" y2="335" stroke={W} strokeWidth="1" />
+          <line x1="35" y1="195" x2="310" y2="195" stroke={W} strokeWidth="1" />
+          {/* Small rooms top-left partition */}
+          <line x1="35" y1="120" x2="100" y2="120" stroke={W} strokeWidth="0.8" />
+
+          {/* ── Gondola shelves — parallel thin lines ── */}
+          {/* Top-left room — 3 gondolas */}
+          <Gondola x={50} y={40} rows={5} w={55} />
+          <Gondola x={50} y={72} rows={5} w={55} />
+          <Gondola x={120} y={40} rows={5} w={60} />
+          <Gondola x={120} y={72} rows={5} w={60} />
+
+          {/* Below partition */}
+          <Gondola x={50} y={132} rows={4} w={55} />
+          <Gondola x={120} y={132} rows={4} w={60} />
+          <Gondola x={50} y={162} rows={4} w={55} />
+          <Gondola x={120} y={162} rows={4} w={60} />
+
+          {/* Center area */}
+          <Gondola x={210} y={40} rows={5} w={85} />
+          <Gondola x={210} y={78} rows={5} w={85} />
+          <Gondola x={210} y={116} rows={5} w={85} />
+          <Gondola x={210} y={154} rows={5} w={85} />
+
+          {/* Right wing */}
+          <Gondola x={325} y={40} rows={5} w={105} />
+          <Gondola x={325} y={78} rows={5} w={105} />
+          <Gondola x={325} y={116} rows={5} w={105} />
+          <Gondola x={325} y={154} rows={5} w={105} />
+          <Gondola x={325} y={200} rows={5} w={105} />
+          <Gondola x={325} y={240} rows={5} w={105} />
+
+          {/* Bottom-left area */}
+          <Gondola x={50} y={210} rows={4} w={110} />
+          <Gondola x={50} y={240} rows={4} w={110} />
+          <Gondola x={175} y={210} rows={4} w={120} />
+          <Gondola x={175} y={240} rows={4} w={120} />
+
+          {/* ── Checkout counters at the bottom ── */}
+          {[60, 120, 180, 240].map((cx) => (
+            <g key={cx}>
+              <rect x={cx} y={300} width={40} height={18} rx="2" stroke={W} strokeWidth="1" fill="none" />
+              <rect x={cx + 28} y={303} width={8} height={12} rx="1" stroke={W} strokeWidth="0.7" fill="none" />
+            </g>
+          ))}
+
+          {/* ── Heatmap overlay (blurred glow) ── */}
+          <g filter="url(#glowSoft)">
+            {/* Main hot corridor across top aisles */}
+            <ellipse cx="130" cy="65" rx="80" ry="30" fill="url(#hRed)" />
+            <ellipse cx="260" cy="65" rx="70" ry="28" fill="url(#hOrange)" />
+            <ellipse cx="380" cy="65" rx="55" ry="25" fill="url(#hOrange)" />
+            {/* Mid section heat */}
+            <ellipse cx="130" cy="150" rx="70" ry="25" fill="url(#hOrange)" />
+            <ellipse cx="260" cy="140" rx="65" ry="30" fill="url(#hRed)" />
+            <ellipse cx="380" cy="150" rx="50" ry="28" fill="url(#hRed)" />
+            {/* Bottom area */}
+            <ellipse cx="140" cy="230" rx="80" ry="22" fill="url(#hOrange)" />
+            <ellipse cx="260" cy="225" rx="60" ry="20" fill="url(#hYellow)" />
+            <ellipse cx="380" cy="230" rx="50" ry="28" fill="url(#hRed)" />
+            {/* Checkout heat */}
+            <ellipse cx="160" cy="305" rx="100" ry="18" fill="url(#hRed)" />
+            {/* Connecting corridor blobs */}
+            <ellipse cx="190" cy="100" rx="20" ry="50" fill="url(#hOrange)" />
+            <ellipse cx="310" cy="180" rx="15" ry="60" fill="url(#hOrange)" />
+            <ellipse cx="100" cy="195" rx="60" ry="12" fill="url(#hYellow)" />
+          </g>
+
+          {/* Secondary glow layer for extra intensity at hot spots */}
+          <g filter="url(#glow)" opacity="0.5">
+            <ellipse cx="130" cy="65" rx="40" ry="15" fill="#ff6b47" />
+            <ellipse cx="260" cy="140" rx="35" ry="15" fill="#ff6b47" />
+            <ellipse cx="380" cy="230" rx="30" ry="15" fill="#ff6b47" />
+            <ellipse cx="160" cy="305" rx="50" ry="10" fill="#ff6b47" />
+          </g>
+
+          {/* ── Path arrows (dotted + triangle markers) ── */}
+          <path
+            d="M42 320 Q60 290 100 270 Q150 250 200 200 Q240 170 270 130 Q290 100 320 70 Q360 40 430 45"
+            stroke="#e8a87c"
+            strokeWidth="1.2"
+            strokeDasharray="5 4"
+            fill="none"
+            opacity="0.7"
+            markerEnd="url(#arrowHead)"
+          />
+          <path
+            d="M42 325 Q80 300 140 280 Q200 260 250 240 Q280 225 300 210 Q315 195 320 180"
+            stroke="#e8a87c"
+            strokeWidth="1.2"
+            strokeDasharray="5 4"
+            fill="none"
+            opacity="0.55"
+            markerEnd="url(#arrowHead)"
+          />
+          <path
+            d="M42 315 Q70 280 110 250 Q130 235 140 215 Q155 200 210 200 Q250 200 290 250 Q320 280 380 290 Q410 295 435 280"
+            stroke="#e8a87c"
+            strokeWidth="1.2"
+            strokeDasharray="5 4"
+            fill="none"
+            opacity="0.45"
+            markerEnd="url(#arrowHead)"
+          />
+          <path
+            d="M42 330 Q90 310 130 310 Q170 305 200 305"
+            stroke="#e8a87c"
+            strokeWidth="1"
+            strokeDasharray="4 3"
+            fill="none"
+            opacity="0.35"
+            markerEnd="url(#arrowHead)"
+          />
         </svg>
       </div>
     </div>
   );
 }
+
+/* ────────────────────────────────────────────────────────────
+   Dashboard Mock
+   ──────────────────────────────────────────────────────────── */
 
 function DashboardMock() {
   return (
@@ -185,7 +312,6 @@ function DashboardMock() {
         <div className="ml-auto h-6 w-32 rounded bg-white/5" />
       </div>
       <div className="grid gap-px bg-white/5 md:grid-cols-2">
-        {/* Bar chart */}
         <div className="bg-surface p-4">
           <p className="mb-3 text-xs font-semibold text-foreground">
             Peak Hour Patterns
@@ -208,53 +334,26 @@ function DashboardMock() {
             <span>9pm</span>
           </div>
         </div>
-        {/* Network */}
         <div className="bg-surface p-4">
           <p className="mb-3 text-xs font-semibold text-foreground">
             Zone-to-Zone Transition
           </p>
-          <svg
-            viewBox="0 0 200 100"
-            className="w-full"
-            fill="none"
-          >
-            {/* Nodes */}
+          <svg viewBox="0 0 200 100" className="w-full" fill="none">
             {[
-              [30, 20],
-              [80, 50],
-              [130, 25],
-              [170, 55],
-              [50, 80],
-              [120, 75],
-              [160, 85],
+              [30, 20], [80, 50], [130, 25], [170, 55],
+              [50, 80], [120, 75], [160, 85],
             ].map(([cx, cy], i) => (
               <g key={i}>
                 <circle cx={cx} cy={cy} r="6" fill="#ff6b47" opacity={0.8 - i * 0.05} />
                 <circle cx={cx} cy={cy} r="3" fill="#0d1117" />
               </g>
             ))}
-            {/* Edges */}
             {[
-              [30, 20, 80, 50],
-              [80, 50, 130, 25],
-              [130, 25, 170, 55],
-              [80, 50, 50, 80],
-              [80, 50, 120, 75],
-              [120, 75, 170, 55],
-              [120, 75, 160, 85],
-              [50, 80, 120, 75],
-              [30, 20, 130, 25],
+              [30, 20, 80, 50], [80, 50, 130, 25], [130, 25, 170, 55],
+              [80, 50, 50, 80], [80, 50, 120, 75], [120, 75, 170, 55],
+              [120, 75, 160, 85], [50, 80, 120, 75], [30, 20, 130, 25],
             ].map(([x1, y1, x2, y2], i) => (
-              <line
-                key={i}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="#ff6b47"
-                strokeWidth="1"
-                opacity={0.3}
-              />
+              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#ff6b47" strokeWidth="1" opacity={0.3} />
             ))}
           </svg>
         </div>
@@ -262,6 +361,10 @@ function DashboardMock() {
     </div>
   );
 }
+
+/* ────────────────────────────────────────────────────────────
+   Comparison Panel (dark themed, architectural SVGs)
+   ──────────────────────────────────────────────────────────── */
 
 function ComparisonPanel({
   title,
@@ -271,82 +374,153 @@ function ComparisonPanel({
   variant: "before" | "after";
 }) {
   const isBefore = variant === "before";
+  const prefix = isBefore ? "b" : "a";
+
   return (
-    <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm">
-      <div className="border-b border-black/5 px-5 py-3">
-        <p className="text-sm font-semibold text-gray-900">{title}</p>
+    <div className="overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="border-b border-border px-5 py-3">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
       </div>
       <div className="p-4">
-        <svg
-          viewBox="0 0 300 200"
-          fill="none"
-          className="w-full rounded-lg"
-        >
-          <rect width="300" height="200" rx="6" fill="#1c2333" />
-          {/* Grid */}
-          <rect x="20" y="15" width="260" height="170" rx="3" stroke="#30363d" strokeWidth="1" fill="none" />
-          <line x1="100" y1="15" x2="100" y2="185" stroke="#30363d" strokeWidth="0.5" />
-          <line x1="180" y1="15" x2="180" y2="185" stroke="#30363d" strokeWidth="0.5" />
-          <line x1="20" y1="90" x2="280" y2="90" stroke="#30363d" strokeWidth="0.5" />
-          {/* Shelves */}
-          {[35, 55, 75, 115, 135, 155].map((y) => (
-            <g key={y}>
-              <rect x="30" y={y} width="60" height="8" rx="1" fill="#21262d" stroke="#30363d" strokeWidth="0.5" />
-              <rect x="110" y={y} width="60" height="8" rx="1" fill="#21262d" stroke="#30363d" strokeWidth="0.5" />
+        <svg viewBox="0 0 300 200" fill="none" className="w-full rounded-lg">
+          <rect width="300" height="200" rx="6" fill="#0d1117" />
+
+          <defs>
+            <filter id={`${prefix}Glow`} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="8" />
+            </filter>
+            <radialGradient id={`${prefix}Red`}>
+              <stop offset="0%" stopColor="#ff6b47" stopOpacity="0.85" />
+              <stop offset="50%" stopColor="#ff6b47" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#ff6b47" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id={`${prefix}Orange`}>
+              <stop offset="0%" stopColor="#f0883e" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#f0883e" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#f0883e" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id={`${prefix}Blue`}>
+              <stop offset="0%" stopColor="#58a6ff" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="#58a6ff" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#58a6ff" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id={`${prefix}Teal`}>
+              <stop offset="0%" stopColor="#3fb9a8" stopOpacity="0.55" />
+              <stop offset="50%" stopColor="#3fb9a8" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#3fb9a8" stopOpacity="0" />
+            </radialGradient>
+            <marker id={`${prefix}Arrow`} markerWidth="5" markerHeight="4" refX="4" refY="2" orient="auto">
+              <polygon points="0,0 5,2 0,4" fill={isBefore ? "#e8a87c" : "#3fb9a8"} opacity="0.7" />
+            </marker>
+          </defs>
+
+          {/* Walls */}
+          <rect x="15" y="10" width="270" height="175" rx="2" stroke="#3a4a5a" strokeWidth="1" fill="none" />
+          <line x1="110" y1="10" x2="110" y2="130" stroke="#3a4a5a" strokeWidth="0.7" />
+          <line x1="190" y1="10" x2="190" y2="185" stroke="#3a4a5a" strokeWidth="0.7" />
+          <line x1="15" y1="130" x2="190" y2="130" stroke="#3a4a5a" strokeWidth="0.7" />
+
+          {/* Gondola shelves as parallel lines */}
+          {/* Left top */}
+          {[25, 30, 35, 40, 45].map((y) => (
+            <line key={`lt${y}`} x1="25" y1={y} x2="70" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[58, 63, 68, 73, 78].map((y) => (
+            <line key={`lt2${y}`} x1="25" y1={y} x2="70" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[25, 30, 35, 40, 45].map((y) => (
+            <line key={`lt3${y}`} x1="78" y1={y} x2="100" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[58, 63, 68, 73, 78].map((y) => (
+            <line key={`lt4${y}`} x1="78" y1={y} x2="100" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {/* Left bottom */}
+          {[92, 97, 102, 107].map((y) => (
+            <line key={`lb${y}`} x1="25" y1={y} x2="70" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[92, 97, 102, 107].map((y) => (
+            <line key={`lb2${y}`} x1="78" y1={y} x2="100" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {/* Center gondolas */}
+          {[25, 30, 35, 40, 45].map((y) => (
+            <line key={`c1${y}`} x1="120" y1={y} x2="180" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[58, 63, 68, 73, 78].map((y) => (
+            <line key={`c2${y}`} x1="120" y1={y} x2="180" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[92, 97, 102, 107].map((y) => (
+            <line key={`c3${y}`} x1="120" y1={y} x2="180" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {/* Right wing gondolas */}
+          {[25, 30, 35, 40, 45].map((y) => (
+            <line key={`r1${y}`} x1="200" y1={y} x2="275" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[58, 63, 68, 73, 78].map((y) => (
+            <line key={`r2${y}`} x1="200" y1={y} x2="275" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[92, 97, 102, 107].map((y) => (
+            <line key={`r3${y}`} x1="200" y1={y} x2="275" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[120, 125, 130, 135, 140].map((y) => (
+            <line key={`r4${y}`} x1="200" y1={y} x2="275" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {/* Bottom area shelves */}
+          {[142, 147, 152, 157].map((y) => (
+            <line key={`btm${y}`} x1="25" y1={y} x2="100" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {[142, 147, 152, 157].map((y) => (
+            <line key={`btm2${y}`} x1="120" y1={y} x2="180" y2={y} stroke="#3a4a5a" strokeWidth="0.6" />
+          ))}
+          {/* Checkout counters */}
+          {[30, 70, 110, 150].map((cx) => (
+            <g key={`ck${cx}`}>
+              <rect x={cx} y={172} width={25} height={10} rx="1" stroke="#3a4a5a" strokeWidth="0.6" fill="none" />
+              <rect x={cx + 18} y={174} width={5} height={6} rx="0.5" stroke="#3a4a5a" strokeWidth="0.5" fill="none" />
             </g>
           ))}
-          <rect x="190" y="30" width="80" height="50" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="0.5" />
-          <rect x="190" y="110" width="80" height="60" rx="2" fill="#21262d" stroke="#30363d" strokeWidth="0.5" />
+
           {/* Heatmap */}
+          <g filter={`url(#${prefix}Glow)`}>
+            {isBefore ? (
+              <>
+                <ellipse cx="65" cy="60" rx="45" ry="28" fill={`url(#${prefix}Red)`} />
+                <ellipse cx="150" cy="65" rx="40" ry="30" fill={`url(#${prefix}Red)`} />
+                <ellipse cx="240" cy="60" rx="38" ry="25" fill={`url(#${prefix}Orange)`} />
+                <ellipse cx="65" cy="100" rx="40" ry="18" fill={`url(#${prefix}Orange)`} />
+                <ellipse cx="150" cy="100" rx="35" ry="15" fill={`url(#${prefix}Red)`} />
+                <ellipse cx="240" cy="130" rx="35" ry="25" fill={`url(#${prefix}Red)`} />
+                <ellipse cx="100" cy="175" rx="55" ry="12" fill={`url(#${prefix}Orange)`} />
+              </>
+            ) : (
+              <>
+                <ellipse cx="65" cy="60" rx="40" ry="22" fill={`url(#${prefix}Teal)`} />
+                <ellipse cx="150" cy="65" rx="50" ry="25" fill={`url(#${prefix}Blue)`} />
+                <ellipse cx="240" cy="70" rx="35" ry="25" fill={`url(#${prefix}Teal)`} />
+                <ellipse cx="100" cy="130" rx="30" ry="15" fill={`url(#${prefix}Blue)`} />
+                <ellipse cx="240" cy="140" rx="30" ry="20" fill={`url(#${prefix}Teal)`} />
+                <ellipse cx="100" cy="175" rx="55" ry="10" fill={`url(#${prefix}Teal)`} />
+              </>
+            )}
+          </g>
+
+          {/* Paths */}
           {isBefore ? (
             <>
-              <ellipse cx="100" cy="80" rx="60" ry="45" fill="url(#cmpRed)" opacity="0.65" />
-              <ellipse cx="230" cy="140" rx="40" ry="30" fill="url(#cmpRed)" opacity="0.5" />
-              <ellipse cx="60" cy="150" rx="35" ry="25" fill="url(#cmpOrange)" opacity="0.45" />
+              <path d="M20 182 Q50 160 70 130 Q90 100 130 80 Q170 60 250 40" stroke="#e8a87c" strokeWidth="1" strokeDasharray="4 3" fill="none" opacity="0.6" markerEnd={`url(#${prefix}Arrow)`} />
+              <path d="M20 185 Q70 170 100 150 Q140 130 180 120 Q210 112 250 100" stroke="#e8a87c" strokeWidth="1" strokeDasharray="4 3" fill="none" opacity="0.4" markerEnd={`url(#${prefix}Arrow)`} />
             </>
           ) : (
             <>
-              <ellipse cx="150" cy="100" rx="70" ry="50" fill="url(#cmpBlue)" opacity="0.4" />
-              <ellipse cx="230" cy="70" rx="40" ry="30" fill="url(#cmpTeal)" opacity="0.35" />
-              <ellipse cx="70" cy="140" rx="35" ry="25" fill="url(#cmpTeal)" opacity="0.3" />
+              <path d="M20 182 Q60 155 100 120 Q140 90 180 70 Q220 50 270 35" stroke="#3fb9a8" strokeWidth="1" strokeDasharray="4 3" fill="none" opacity="0.6" markerEnd={`url(#${prefix}Arrow)`} />
+              <path d="M20 185 Q80 165 140 145 Q190 130 230 110 Q260 95 275 75" stroke="#3fb9a8" strokeWidth="1" strokeDasharray="4 3" fill="none" opacity="0.45" markerEnd={`url(#${prefix}Arrow)`} />
+              <path d="M20 178 Q50 150 80 130 Q100 115 110 100 Q125 80 150 60" stroke="#3fb9a8" strokeWidth="1" strokeDasharray="4 3" fill="none" opacity="0.35" markerEnd={`url(#${prefix}Arrow)`} />
             </>
           )}
-          {/* Paths */}
-          <path
-            d={
-              isBefore
-                ? "M50 185 Q80 150 100 120 Q120 90 160 80 Q200 70 260 50"
-                : "M50 185 Q100 150 150 130 Q200 110 250 60"
-            }
-            stroke={isBefore ? "#ff6b47" : "#3fb9a8"}
-            strokeWidth="1.5"
-            strokeDasharray="5 3"
-            fill="none"
-            opacity="0.7"
-          />
-          <defs>
-            <radialGradient id="cmpRed">
-              <stop offset="0%" stopColor="#ff6b47" />
-              <stop offset="100%" stopColor="#ff6b47" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="cmpOrange">
-              <stop offset="0%" stopColor="#f0883e" />
-              <stop offset="100%" stopColor="#f0883e" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="cmpBlue">
-              <stop offset="0%" stopColor="#58a6ff" />
-              <stop offset="100%" stopColor="#58a6ff" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="cmpTeal">
-              <stop offset="0%" stopColor="#3fb9a8" />
-              <stop offset="100%" stopColor="#3fb9a8" stopOpacity="0" />
-            </radialGradient>
-          </defs>
         </svg>
       </div>
       <div className="px-5 pb-4">
         {isBefore ? (
-          <ul className="space-y-1 text-xs text-gray-600">
+          <ul className="space-y-1 text-xs text-muted-foreground">
             <li>High Congestion Zones</li>
             <li>Low Engagement Areas</li>
             <li>Bottlenecks &amp; Dead Zones</li>
@@ -355,19 +529,19 @@ function ComparisonPanel({
           <div className="flex flex-wrap gap-4">
             <div>
               <span className="text-lg font-bold text-coral">+18%</span>
-              <p className="text-[10px] text-gray-500">Sales Lift</p>
+              <p className="text-[10px] text-muted-foreground">Sales Lift</p>
             </div>
             <div>
               <span className="text-lg font-bold text-teal">-22%</span>
-              <p className="text-[10px] text-gray-500">Queue Time</p>
+              <p className="text-[10px] text-muted-foreground">Queue Time</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-600">Improved Flow</p>
-              <p className="text-[10px] text-gray-500">&amp; Dwell Time</p>
+              <p className="text-xs font-medium text-foreground">Improved Flow</p>
+              <p className="text-[10px] text-muted-foreground">&amp; Dwell Time</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-600">Reduced</p>
-              <p className="text-[10px] text-gray-500">Dead Zones</p>
+              <p className="text-xs font-medium text-foreground">Reduced</p>
+              <p className="text-[10px] text-muted-foreground">Dead Zones</p>
             </div>
           </div>
         )}
@@ -447,7 +621,6 @@ export default function Home() {
             </p>
           </div>
           <div className="grid items-start gap-10 lg:grid-cols-2">
-            {/* Left: insight cards */}
             <div className="space-y-5">
               {insightCards.map((card) => (
                 <div
@@ -485,19 +658,18 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            {/* Right: dashboard mock */}
             <DashboardMock />
           </div>
         </div>
       </section>
 
-      {/* ─── Comparison (light section) ─── */}
-      <section className="light-section bg-[#f8f9fb] px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+      {/* ─── Comparison (dark themed) ─── */}
+      <section className="border-t border-border px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-7xl text-center">
-          <h2 className="font-heading text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Floxo Layout Comparison Tool
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-gray-600">
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
             See exactly how layout changes translate into measurable
             improvements.
           </p>
@@ -533,10 +705,7 @@ export default function Home() {
                 className="relative flex flex-col items-center text-center md:items-start md:text-left"
               >
                 <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-surface shadow-sm">
-                  <step.icon
-                    className="size-6 text-coral"
-                    aria-hidden
-                  />
+                  <step.icon className="size-6 text-coral" aria-hidden />
                 </div>
                 <span className="mb-1.5 text-[11px] font-bold uppercase tracking-widest text-coral">
                   {step.step}
